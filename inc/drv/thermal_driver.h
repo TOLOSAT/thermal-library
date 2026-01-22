@@ -46,7 +46,7 @@
 #define IS_ENV_INIT(env)                                        \
     (((env) != NULL) &&                /* Environment exists */ \
      ((env)->temp_sensors != NULL) &&  /* Temp sensors exist */ \
-     ((env)->temp_sensor_count > 0) && /* Sensors exist */      \
+     ((env)->temp_sensor_count > 0u) && /* Sensors exist */      \
      ((env)->ow_device_init_state == INIT_NOT_DONE))
 
 /**
@@ -56,7 +56,7 @@
 #define IS_ENV_VALID(env)                                       \
     (((env) != NULL) &&                /* Environment exists */ \
      ((env)->temp_sensors != NULL) &&  /* Temp sensors exist */ \
-     ((env)->temp_sensor_count > 0) && /* Sensors exist */      \
+     ((env)->temp_sensor_count > 0u) && /* Sensors exist */      \
      ((env)->ow_device_init_state == INIT_DONE))
 
 /***************************** Types Definitions *****************************/
@@ -110,11 +110,11 @@ typedef struct
 
 /*************************** Functions Declarations **************************/
 
-extern returnCode_t DS18B20Init(temSensorContext_t *g_temp_context);
-extern returnCode_t DS18B20StartMeasurementBroadcast(temSensorContext_t *g_temp_context);
-extern returnCode_t DS18B20ReadTemperaturesBroadcast(temSensorContext_t *g_temp_context, int16_t *raw_temperatures, size_t len);
-extern returnCode_t DS18B20StartMeasurement(temSensorContext_t *g_temp_context, uint8_t sensor_index);
-extern returnCode_t DS18B20ReadTemperature(temSensorContext_t *g_temp_context, uint8_t sensor_index, int16_t *raw_temperature);
+extern returnCode_t DS18B20Init(temSensorContext_t *temp_context);
+extern returnCode_t DS18B20StartMeasurementBroadcast(temSensorContext_t *temp_context);
+extern returnCode_t DS18B20ReadTemperaturesBroadcast(temSensorContext_t *temp_context, int16_t *raw_temperatures, size_t len);
+extern returnCode_t DS18B20StartMeasurement(temSensorContext_t *temp_context, uint8_t sensor_index);
+extern returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t sensor_index, int16_t *raw_temperature);
 extern returnCode_t DS18B20ConvertRawToFloat(temSensorModel_t temp_sensor_model, int16_t raw_temperature, float *temperature);
 
 #endif /* THERMAL_DRIVER_H */
