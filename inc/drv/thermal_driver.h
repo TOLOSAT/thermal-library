@@ -25,19 +25,19 @@
 
 /***************************** Macros Definitions ****************************/
 
-#define MATCH_ROM_CMD_SIZE  1u /* Match ROM command size */
-#define SKIP_ROM_CMD_SIZE   1u /* Skip ROM command size */
-#define ROM_CMD_SIZE        8u /* ROM size (64 bits) */
-#define READ_ROM_CMD_SIZE   1u /* Read ROM command size */
-#define RES_MSG_SIZE        8u /* Response message size */
+#define ROM_CMD_SIZE        1u /* ROM type command size (1 byte) */
+#define FCN_CMD_SIZE        1u /* Function type command size (1 byte) */
+#define ROM_SIZE            8u /* ROM size (8 bytes) */
+#define SCRATCHPAD_SIZE     9u /* Response message size (9 bytes -> 8 bytes scratchpad + CRC 1 byte) */
 
-#define MEAS_BROAD_CMD_SIZE (MATCH_ROM_CMD_SIZE + SKIP_ROM_CMD_SIZE) /* Broadcast measure cmd */
-#define MEAS_CMD_SIZE       (MATCH_ROM_CMD_SIZE + ROM_CMD_SIZE)      /* Targeted measure cmd */
-#define READ_CMD_SIZE       (READ_ROM_CMD_SIZE + ROM_CMD_SIZE)       /* ROM read cmd */
+#define MEAS_BROAD_CMD_SIZE (ROM_CMD_SIZE + FCN_CMD_SIZE)                   /* Broadcast temp cmd size */
+#define MEAS_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE)        /* Unicast temp cmd size */
+#define READ_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE)        /* Unicast read temp cmd size */
 
-#define MATCH_ROM_CMD       0x55u /* Match ROM opcode */
-#define SKIP_ROM_CMD        0xCCu /* Skip ROM opcode */
-#define READ_ROM_CMD        0x33u /* Read ROM opcode */
+#define MATCH_ROM_CMD       0x55u /* Rom cmd - Match ROM opcode */
+#define SKIP_ROM_CMD        0xCCu /* Rom cmd - Skip ROM opcode */
+#define CONVERT_TEMP_CMD    0x44u /* Fcn cmd - Convert temp opcode */
+#define READ_SCRATCHPAD_CMD 0xBEu /* Fcn cmd - Read scratchpad opcode */
 
 /**
  * @def     IS_ENV_INIT(env)

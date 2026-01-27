@@ -71,8 +71,8 @@ returnCode_t DS18B20StartMeasurementBroadcast(temSensorContext_t *temp_context)
         uint8_t ow_msg[MEAS_BROAD_CMD_SIZE] = { 0 };
 
         // Commands to be sent -> Operation -> Action
-        ow_msg[0] = MATCH_ROM_CMD;
-        ow_msg[1] = SKIP_ROM_CMD;
+        ow_msg[0] = SKIP_ROM_CMD;
+        ow_msg[1] = CONVERT_TEMP_CMD;
 
         // One wire device call
         return_value = DeviceIoctl(temp_context->ow_device, IOCTL_OW_INIT_CONNECTION, NULL, 0u);
@@ -130,17 +130,19 @@ returnCode_t DS18B20StartMeasurement(temSensorContext_t *temp_context, uint8_t s
         if (return_value == RET_SUCCESSFUL)
         {
             // Declaration of the message size to be sent via one wire
-            uint8_t ow_msg_cmd[MEAS_CMD_SIZE] = { 0 };
+            uint8_t ow_msg_cmd[MEAS_UNIC_CMD_SIZE] = { 0 };
 
-            // Commands to be sent -> Operation -> Action
+            // Match ROM 1u -> ROM 8u -> Convert Temp 1u
             ow_msg_cmd[0] = MATCH_ROM_CMD;
             for (uint8_t i = 0u; i < ROM_CMD_SIZE; i++)
             {
                 ow_msg_cmd[i + 1u] = temp_context->temp_sensors->temp_sensor_rom_code[i];
             }
+            ow_msg_cmd[MEAS_UNIC_CMD_SIZE - 1u] = CONVERT_TEMP_CMD;
 
-            // Send command to temperature sensors -> Asks for measurement broadcast
-            return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, MEAS_CMD_SIZE);
+
+            // Send command to specified temperature sensor
+            return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, MEAS_UNIC_CMD_SIZE);
         }
     }
     else
@@ -165,27 +167,30 @@ returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t se
         if (return_value == RET_SUCCESSFUL)
         {
             // Declaration of the message size to be sent and written via One-Wire
-            uint8_t ow_msg_cmd[READ_CMD_SIZE] = { 0 };
+            uint8_t ow_msg_cmd[READ_UNIC_CMD_SIZE] = { 0 };
+            uint8_t ow_msg_scratchpad[SCRATCHPAD_SIZE] = { 0 };
 
-            // Commands to be sent -> Operation -> Action
-            ow_msg_cmd[0] = READ_ROM_CMD;
+            // Match Rom 1u -> Rom 8u -> Read Scratchpad 1u
+            ow_msg_cmd[0] = MATCH_ROM_CMD;
             for (uint8_t i = 0u; i < ROM_CMD_SIZE; i++)
             {
                 ow_msg_cmd[i + 1u] = temp_context->temp_sensors->temp_sensor_rom_code[i];
             }
+            ow_msg_cmd[READ_UNIC_CMD_SIZE - 1u] = READ_SCRATCHPAD_CMD;
 
-            // Send command to temperature sensors -> Ask for measurement readout
-            return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, READ_CMD_SIZE);
+
+            // Send command to specific temperature sensor -> Ask for measurement readout
+            return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, READ_UNIC_CMD_SIZE);
 
             if (return_value == RET_SUCCESSFUL)
             {
                 // Copy the measurement readout
-                (void *)memset(&ow_msg_cmd, 0, RES_MSG_SIZE);
-                return_value = DeviceRead(temp_context->ow_device, ow_msg_cmd, RES_MSG_SIZE);
+                (void *)memset(ow_msg_scratchpad, 0, SCRATCHPAD_SIZE);
+                return_value = DeviceRead(temp_context->ow_device, ow_msg_scratchpad, SCRATCHPAD_SIZE);
 
                 if (return_value == RET_SUCCESSFUL)
                 {
-                    *raw_temperature = ((ow_msg_cmd[1] << 8)) | ow_msg_cmd[0];
+                    *raw_temperature = ((ow_msg_scratchpad[1] << 8)) | ow_msg_scratchpad[0];
                 }
             }
         }
