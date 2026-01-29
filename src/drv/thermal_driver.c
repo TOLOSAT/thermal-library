@@ -134,9 +134,9 @@ returnCode_t DS18B20StartMeasurement(temSensorContext_t *temp_context, uint8_t s
 
             // Match ROM 1u -> ROM 8u -> Convert Temp 1u
             ow_msg_cmd[0] = MATCH_ROM_CMD;
-            for (uint8_t i = 0u; i < ROM_CMD_SIZE; i++)
+            for (uint8_t i = 0u; i < ROM_SIZE; i++)
             {
-                ow_msg_cmd[i + 1u] = temp_context->temp_sensors->temp_sensor_rom_code[i];
+                ow_msg_cmd[i + 1u] = temp_context->temp_sensors[sensor_index].temp_sensor_rom_code[i];
             }
             ow_msg_cmd[MEAS_UNIC_CMD_SIZE - 1u] = CONVERT_TEMP_CMD;
 
@@ -172,9 +172,9 @@ returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t se
 
             // Match Rom 1u -> Rom 8u -> Read Scratchpad 1u
             ow_msg_cmd[0] = MATCH_ROM_CMD;
-            for (uint8_t i = 0u; i < ROM_CMD_SIZE; i++)
+            for (uint8_t i = 0u; i < ROM_SIZE; i++)
             {
-                ow_msg_cmd[i + 1u] = temp_context->temp_sensors->temp_sensor_rom_code[i];
+                ow_msg_cmd[i + 1u] = temp_context->temp_sensors[sensor_index].temp_sensor_rom_code[i];
             }
             ow_msg_cmd[READ_UNIC_CMD_SIZE - 1u] = READ_SCRATCHPAD_CMD;
 
