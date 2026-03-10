@@ -140,7 +140,6 @@ returnCode_t DS18B20StartMeasurement(temSensorContext_t *temp_context, uint8_t s
             }
             ow_msg_cmd[MEAS_UNIC_CMD_SIZE - 1u] = CONVERT_TEMP_CMD;
 
-
             // Send command to specified temperature sensor
             return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, MEAS_UNIC_CMD_SIZE);
         }
@@ -167,7 +166,7 @@ returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t se
         if (return_value == RET_SUCCESSFUL)
         {
             // Declaration of the message size to be sent and written via One-Wire
-            uint8_t ow_msg_cmd[READ_UNIC_CMD_SIZE] = { 0 };
+            uint8_t ow_msg_cmd[READ_UNIC_CMD_SIZE]     = { 0 };
             uint8_t ow_msg_scratchpad[SCRATCHPAD_SIZE] = { 0 };
 
             // Match Rom 1u -> Rom 8u -> Read Scratchpad 1u
@@ -177,7 +176,6 @@ returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t se
                 ow_msg_cmd[i + 1u] = temp_context->temp_sensors[sensor_index].temp_sensor_rom_code[i];
             }
             ow_msg_cmd[READ_UNIC_CMD_SIZE - 1u] = READ_SCRATCHPAD_CMD;
-
 
             // Send command to specific temperature sensor -> Ask for measurement readout
             return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, READ_UNIC_CMD_SIZE);
@@ -214,7 +212,7 @@ returnCode_t DS18B20ConvertRawToFloat(temSensorModel_t temp_sensor_model, int16_
     {
         if (temp_sensor_model == DS18B20_MODEL)
         {
-            *temperature = (float)(((uint16_t) raw_temperature << 4) >> 4) * 0.0625;
+            *temperature = (float)(((uint16_t)raw_temperature << 4) >> 4) * 0.0625;
         }
         else
         {

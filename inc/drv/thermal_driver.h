@@ -30,9 +30,9 @@
 #define ROM_SIZE            8u /* ROM size (8 bytes) */
 #define SCRATCHPAD_SIZE     9u /* Response message size (9 bytes -> 8 bytes scratchpad + CRC 1 byte) */
 
-#define MEAS_BROAD_CMD_SIZE (ROM_CMD_SIZE + FCN_CMD_SIZE)                   /* Broadcast temp cmd size */
-#define MEAS_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE)        /* Unicast temp cmd size */
-#define READ_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE)        /* Unicast read temp cmd size */
+#define MEAS_BROAD_CMD_SIZE (ROM_CMD_SIZE + FCN_CMD_SIZE)            /* Broadcast temp cmd size */
+#define MEAS_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE) /* Unicast temp cmd size */
+#define READ_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE) /* Unicast read temp cmd size */
 
 #define MATCH_ROM_CMD       0x55u /* Rom cmd - Match ROM opcode */
 #define SKIP_ROM_CMD        0xCCu /* Rom cmd - Skip ROM opcode */
@@ -43,9 +43,9 @@
  * @def     IS_ENV_INIT(env)
  * @brief   Indicates if the environment exists in order to initialize it
  */
-#define IS_ENV_INIT(env)                                        \
-    (((env) != NULL) &&                /* Environment exists */ \
-     ((env)->temp_sensors != NULL) &&  /* Temp sensors exist */ \
+#define IS_ENV_INIT(env)                                         \
+    (((env) != NULL) &&                 /* Environment exists */ \
+     ((env)->temp_sensors != NULL) &&   /* Temp sensors exist */ \
      ((env)->temp_sensor_count > 0u) && /* Sensors exist */      \
      ((env)->ow_device_init_state == INIT_NOT_DONE))
 
@@ -53,9 +53,9 @@
  * @def     IS_ENV_VALID(env)
  * @brief   Indicates if the environment has been initialized properly
  */
-#define IS_ENV_VALID(env)                                       \
-    (((env) != NULL) &&                /* Environment exists */ \
-     ((env)->temp_sensors != NULL) &&  /* Temp sensors exist */ \
+#define IS_ENV_VALID(env)                                        \
+    (((env) != NULL) &&                 /* Environment exists */ \
+     ((env)->temp_sensors != NULL) &&   /* Temp sensors exist */ \
      ((env)->temp_sensor_count > 0u) && /* Sensors exist */      \
      ((env)->ow_device_init_state == INIT_DONE))
 
