@@ -17,6 +17,8 @@
 
 /***************************** Macros Definitions ****************************/
 
+#define MAX_TEMP_SENSORS 16u
+
 /*************************** Functions Declarations **************************/
 
 /*************************** Variables Definitions ***************************/
@@ -25,10 +27,10 @@
 
 /**
  * @fn              ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code)
- * @brief           Function that receives S17SS1 TC (Broadcast), asks for temperature and responds back with TM
+ * @brief           Function that receives S17SS1 TC (Broadcast) which asks for broadcast temperature
  * @param[in,out]   env PUS178 environment
  * @param[in]       tc S178SS1 TC
- * @param[out]      tm S178SS2 TM that we will send with temperature env information
+ * @param[out]      tm S178SS2 TM with temperature sensor env information
  * @param[out]      error_code Indicates which error has been encountered for S178SS2 TM
  * @retval          #RET_INVALID_PARAM if a pointer is NULL
  * @retval          #RET_ERROR if cannot build TM
@@ -38,33 +40,58 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
 {
     returnCode_t return_value = RET_SUCCESSFUL;
 
-    // Check parameter(s)
-    if ((env != NULL) && (error_code != NULL) && (tm != NULL))
+    // Unused (no data useful for broadcast)
+    (void)(tc);
+
+    // Check parameters
+    if ((env != NULL) && (error_code != NULL))
     {
-        // Get pus178 environment (context with sensor data)
         pus178Env_t *pus178_env = (pus178Env_t *)env;
 
+        // Check pointer exists
         if (pus178_env->p_thermal_context != NULL)
         {
-            // Pointer to environment exists
             *error_code = PUS_EXECUTION_NO_ERROR;
 
-            // With environment data, demand broadcast temperature conversion
+            // Preallocation required thermal driver variables
+            uint8_t sensor_count = pus178_env->p_thermal_context->temp_sensor_count;
+            int16_t raw_temperatures[MAX_TEMP_SENSORS] = { 0 };
+
+            if (return_value == RET_SUCCESSFUL)
+            {
+                return_value = DS18B20StartMeasurementBroadcast(pus178_env->p_thermal_context);
+
+                if (return_value == RET_SUCCESSFUL)
+                {
+                    return_value = DS18B20ReadTemperaturesBroadcast(pus178_env->p_thermal_context, raw_temperatures, sensor_count);
+
+                    if (return_value == RET_SUCCESSFUL)
+                    {
+                        return_value = BuildTM(tm, 178u, 2u, (pusData_t *)raw_temperatures, sensor_count * sizeof(int16_t));
+
+                        if (return_value != RET_SUCCESSFUL)
+                        {
+                            *error_code = PUS_EXECUTION_FAILED;
+                        }
+                    }
+                    else
+                    {
+                        *error_code = PUS_EXECUTION_FAILED;
+                    }
+                }
+                else
+                {
+                    *error_code = PUS_EXECUTION_FAILED;
+                }
+            }
+            else
+            {
+                *error_code = PUS_EXECUTION_FAILED;
+            }
         }
         else
         {
-            return_value = RET_INVALID_PARAM;
-        }
-
-        // Error code Initialization
-        *error_code = PUS_EXECUTION_NO_ERROR;
-
-        // Build PUS178 SS2 TM (Broadcast data)
-        returnCode_t test_build = BuildS178SS2(tm, &env);
-        if (test_build != RET_SUCCESSFUL)
-        {
-            return_value = RET_ERROR;
-            *error_code  = PUS_EXECUTION_TM_BUILDING_FAILED;
+            *error_code = PUS_EXECUTION_NO_ERROR;
         }
     }
     else
@@ -77,34 +104,74 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
 
 /**
  * @fn              ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code)
- * @brief           Function that send S178SS3 TC (Unicast), asks for temperature and responds back with TM
+ * @brief           Function that receives S17SS3 TC (Unicast) which asks for unicast temperature
  * @param[in,out]   env PUS178 environment
  * @param[in]       tc S178SS3 TC
- * @param[out]      tm S178SS4 TM that we will send
- * @param[out]      error_code Indicates which error has been encountered for S1SS8 TM
+ * @param[out]      tm S178SS4 TM with temperature sensor env information
+ * @param[out]      error_code Indicates which error has been encountered for S178SS4 TM
  * @retval          #RET_INVALID_PARAM if a pointer is NULL
  * @retval          #RET_ERROR if cannot build TM
  * @retval          #RET_SUCCESSFUL else
  */
-extern returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code)
+returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code)
 {
     returnCode_t return_value = RET_SUCCESSFUL;
 
-    // Unused Parameters
-    (void)(tc);
+    pusData_t tm_data[TM_MAX_DATA_SIZE] = { 0 };
 
-    // Check parameter(s)
-    if ((tm != NULL) && (error_code != NULL))
+    // Check parameters
+    if ((env != NULL) && (error_code != NULL))
     {
-        // Error code Initialization
-        *error_code = PUS_EXECUTION_NO_ERROR;
+        pus178Env_t *pus178_env = (pus178Env_t *)env;
 
-        // Build PUS178 SS4 TM (Unicast data)
-        returnCode_t test_build = BuildS178SS4(tm, &env);
-        if (test_build != RET_SUCCESSFUL)
+        // Check pointer exists
+        if (pus178_env->p_thermal_context != NULL)
         {
-            return_value = RET_ERROR;
-            *error_code  = PUS_EXECUTION_TM_BUILDING_FAILED;
+            *error_code = PUS_EXECUTION_NO_ERROR;
+
+            // Preallocation required for thermal driver variables
+            int16_t raw_temperatures[MAX_TEMP_SENSORS] = { 0 };
+
+            // TODO:
+            // Extract information from tc (sensor_selected)
+            // uint16_t msg_size = tc->spp_header.packet_data_length + 1u - TC_HEADER_SIZE - CRC_TRAILER_SIZE;
+            pus178SENSORID_t sensorid = *tc->data;
+
+            if (return_value == RET_SUCCESSFUL)
+            {
+                return_value = DS18B20StartMeasurement(pus178_env->p_thermal_context, sensorid);
+
+                if (return_value == RET_SUCCESSFUL)
+                {
+                    return_value = DS18B20ReadTemperature(pus178_env->p_thermal_context, sensorid, &raw_temperatures[sensorid]);
+
+                    if (return_value == RET_SUCCESSFUL)
+                    {
+                        return_value = BuildTM(tm, 178u, 4u, (pusData_t *)tm_data, sizeof(int16_t));
+
+                        if (return_value != RET_SUCCESSFUL)
+                        {
+                            *error_code = PUS_EXECUTION_FAILED;
+                        }
+                    }
+                    else
+                    {
+                        *error_code = PUS_EXECUTION_FAILED;
+                    }
+                }
+                else
+                {
+                    *error_code = PUS_EXECUTION_FAILED;
+                }
+            }
+            else
+            {
+                *error_code = PUS_EXECUTION_FAILED;
+            }
+        }
+        else
+        {
+            *error_code = PUS_EXECUTION_NO_ERROR;
         }
     }
     else
