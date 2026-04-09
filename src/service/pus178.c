@@ -45,11 +45,11 @@ returnCode_t InitS178(pus178Env_t *pus178_env)
         return_value = DS18B20Init(pus178_env->p_thermal_context);
         if (return_value == RET_SUCCESSFUL)
         {
-            pus178_env->status = PUS_CONTEXT_INITIALIZED;
+            pus178_env->status = PUS_INITIALIZED;
         }
         else
         {
-            pus178_env->status = PUS_CONTEXT_NOT_INITIALIZED;
+            pus178_env->status = PUS_NOT_INITIALIZED;
         }
     }
     else
@@ -88,7 +88,7 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
         pus178Env_t *pus178_env = (pus178Env_t *)env;
 
         // Check pus178 initialization
-        if (pus178_env->status == PUS_CONTEXT_INITIALIZED)
+        if (pus178_env->status == PUS_INITIALIZED)
         {
             // Check pointer to thermal context exists
             if (pus178_env->p_thermal_context != NULL)
@@ -179,7 +179,7 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
         pus178Env_t *pus178_env = (pus178Env_t *)env;
 
         // Check pus178 initialization
-        if (pus178_env->status == PUS_CONTEXT_INITIALIZED)
+        if (pus178_env->status == PUS_INITIALIZED)
         {
             // Check pointer to thermal context exists
             if (pus178_env->p_thermal_context != NULL)
@@ -191,6 +191,8 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                     return_value = DS18B20StartMeasurementBroadcast(pus178_env->p_thermal_context);
                     if (return_value == RET_SUCCESSFUL)
                     {
+                        uint8_t tm_buffer[MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE] = { 0 };
+
                         // N of sensors requested from tc (>0 checked) and loop parameters
                         uint8_t tc_sensor_n_req = tc->data[0];
                         uint8_t i               = 0;
@@ -219,8 +221,6 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                                     // Fill buffer with 1 sensor data if valid
                                     if (return_value == RET_SUCCESSFUL)
                                     {
-                                        uint8_t tm_buffer[MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE] = { 0 };
-
                                         // Id (8-bit, big-endian)
                                         tm_buffer[offset]  = sensorid;
                                         offset            += sizeof(pus178sensorId_t);
