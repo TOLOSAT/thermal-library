@@ -25,15 +25,26 @@
  */
 typedef struct
 {
-    temSensorContext_t *p_thermal_context; /**< Pointer to the thermal instance */
+    pusContextStatus_t status;                    /**< @brief PUS178 environment status */
+    temSensorContext_t *p_thermal_context; /**< @brief Pointer to the thermal instance */
 } pus178Env_t;
 
-typedef uint16_t pus178SENSORID_t;
+/**
+ * @brief   Type of id describing a sensor
+ */
+typedef uint8_t pus178sensorId_t;
+
+/**
+ * @brief   Type describing raw temperature reading from sensor
+ */
+typedef int16_t pus178rawTemperature_t;
+
 
 /*************************** Variables Declarations **************************/
 
 /*************************** Functions Declarations **************************/
 
+extern returnCode_t InitS178(pus178Env_t *pus178_env);
 extern returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code);
 extern returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code);
 
