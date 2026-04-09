@@ -166,8 +166,7 @@ returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t se
         if (return_value == RET_SUCCESSFUL)
         {
             // Declaration of the message size to be sent and written via One-Wire
-            uint8_t ow_msg_cmd[READ_UNIC_CMD_SIZE]     = { 0 };
-            uint8_t ow_msg_scratchpad[SCRATCHPAD_SIZE] = { 0 };
+            uint8_t ow_msg_cmd[READ_UNIC_CMD_SIZE] = { 0 };
 
             // Match Rom 1u -> Rom 8u -> Read Scratchpad 1u
             ow_msg_cmd[0] = MATCH_ROM_CMD;
@@ -179,9 +178,10 @@ returnCode_t DS18B20ReadTemperature(temSensorContext_t *temp_context, uint8_t se
 
             // Send command to specific temperature sensor -> Ask for measurement readout
             return_value = DeviceWrite(temp_context->ow_device, ow_msg_cmd, READ_UNIC_CMD_SIZE);
-
             if (return_value == RET_SUCCESSFUL)
             {
+                uint8_t ow_msg_scratchpad[SCRATCHPAD_SIZE] = { 0 };
+
                 // Copy the measurement readout
                 (void *)memset(ow_msg_scratchpad, 0, SCRATCHPAD_SIZE);
                 return_value = DeviceRead(temp_context->ow_device, ow_msg_scratchpad, SCRATCHPAD_SIZE);
