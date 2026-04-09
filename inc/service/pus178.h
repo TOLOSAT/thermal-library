@@ -25,7 +25,7 @@
  */
 typedef struct
 {
-    pusContextStatus_t status;                    /**< @brief PUS178 environment status */
+    pusContextStatus_t status;             /**< @brief PUS178 environment status */
     temSensorContext_t *p_thermal_context; /**< @brief Pointer to the thermal instance */
 } pus178Env_t;
 
@@ -38,7 +38,6 @@ typedef uint8_t pus178sensorId_t;
  * @brief   Type describing raw temperature reading from sensor
  */
 typedef int16_t pus178rawTemperature_t;
-
 
 /*************************** Variables Declarations **************************/
 

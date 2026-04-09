@@ -25,19 +25,19 @@
 
 /***************************** Macros Definitions ****************************/
 
-#define ROM_CMD_SIZE        1u /* ROM type command size (1 byte) */
-#define FCN_CMD_SIZE        1u /* Function type command size (1 byte) */
-#define ROM_SIZE            8u /* ROM size (8 bytes) */
-#define SCRATCHPAD_SIZE     9u /* Response message size (9 bytes -> 8 bytes scratchpad + CRC 1 byte) */
+#define ROM_CMD_SIZE        1u /**< ROM type command size (1 byte) */
+#define FCN_CMD_SIZE        1u /**< Function type command size (1 byte) */
+#define ROM_SIZE            8u /**< ROM size (8 bytes) */
+#define SCRATCHPAD_SIZE     9u /**< Response message size (9 bytes -> 8 bytes scratchpad + CRC 1 byte) */
 
-#define MEAS_BROAD_CMD_SIZE (ROM_CMD_SIZE + FCN_CMD_SIZE)            /* Broadcast temp cmd size */
-#define MEAS_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE) /* Unicast temp cmd size */
-#define READ_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE) /* Unicast read temp cmd size */
+#define MEAS_BROAD_CMD_SIZE (ROM_CMD_SIZE + FCN_CMD_SIZE)            /**< Broadcast temp cmd size */
+#define MEAS_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE) /**< Unicast temp cmd size */
+#define READ_UNIC_CMD_SIZE  (ROM_CMD_SIZE + ROM_SIZE + FCN_CMD_SIZE) /**< Unicast read temp cmd size */
 
-#define MATCH_ROM_CMD       0x55u /* Rom cmd - Match ROM opcode */
-#define SKIP_ROM_CMD        0xCCu /* Rom cmd - Skip ROM opcode */
-#define CONVERT_TEMP_CMD    0x44u /* Fcn cmd - Convert temp opcode */
-#define READ_SCRATCHPAD_CMD 0xBEu /* Fcn cmd - Read scratchpad opcode */
+#define MATCH_ROM_CMD       0x55u /**< Rom cmd - Match ROM opcode */
+#define SKIP_ROM_CMD        0xCCu /**< Rom cmd - Skip ROM opcode */
+#define CONVERT_TEMP_CMD    0x44u /**< Fcn cmd - Convert temp opcode */
+#define READ_SCRATCHPAD_CMD 0xBEu /**< Fcn cmd - Read scratchpad opcode */
 
 /**
  * @def     IS_ENV_INIT(env)
@@ -67,8 +67,8 @@
  */
 typedef enum
 {
-    DS18B20_MODEL, /* Temp sensor DS18B2O - Can be extracted from ROM*/
-    DS18S20_MODEL  /* Temp sensor DS18S20 - Can be extracted from ROM */
+    DS18B20_MODEL, /**< Temp sensor DS18B2O - Can be extracted from ROM*/
+    DS18S20_MODEL  /**< Temp sensor DS18S20 - Can be extracted from ROM */
 } temSensorModel_t;
 
 /**
@@ -77,33 +77,32 @@ typedef enum
  */
 typedef enum
 {
-    INIT_DONE,     /* OneWire already initialized */
-    INIT_NOT_DONE, /* OneWire not initialized */
-    INIT_ERROR     /* OneWire error */
+    INIT_DONE,     /**< OneWire already initialized */
+    INIT_NOT_DONE, /**< OneWire not initialized */
+    INIT_ERROR     /**< OneWire error */
 } initState_t;
 
 /**
- * @typedef temSensorInfo_t
+ * @struct  temSensorInfo_t
  * @brief   Temperature sensor informations
  */
 typedef struct
 {
-    uint8_t temp_sensor_rom_code[8];    /* ROM code (8 bytes) */
-    temSensorModel_t temp_sensor_model; /* Model of sensor (DS18B20 or DS18S20) */
+    uint8_t temp_sensor_rom_code[8];    /**< @brief ROM code (8 bytes) */
+    temSensorModel_t temp_sensor_model; /**< @brief Model of sensor (DS18B20 or DS18S20) */
 } temSensorInfo_t;
 
 /**
- * @typedef temSensorContext_t
+ * @struct  temSensorContext_t
  * @brief   Environment for the temperature middle-ware
-
  */
 typedef struct
 {
-    temSensorInfo_t *temp_sensors;    /* Temperature sensor information (ROM, Model) */
-    uint8_t temp_sensor_count;        /* Number of sensors available */
-    deviceNo_t ow_device;             /* Device specifying OneWire transactions */
-    uint32_t peripheral;              /* Peripheral specifying OneWire transactions */
-    initState_t ow_device_init_state; /* State of Initialization */
+    temSensorInfo_t *temp_sensors;    /**< @brief Temperature sensor information (ROM, Model) */
+    uint8_t temp_sensor_count;        /**< @brief Number of sensors available */
+    deviceNo_t ow_device;             /**< @brief Device specifying OneWire transactions */
+    uint32_t peripheral;              /**< @brief Peripheral specifying OneWire transactions */
+    initState_t ow_device_init_state; /**< @brief State of Initialization */
 } temSensorContext_t;
 
 /*************************** Variables Declarations **************************/

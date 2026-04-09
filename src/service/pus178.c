@@ -17,8 +17,8 @@
 
 /***************************** Macros Definitions ****************************/
 
-#define MAX_TEMP_SENSORS 16u // Maximum number of allocated sensors
-#define SENSOR_PAIR_SIZE (sizeof(pus178sensorId_t) + sizeof(pus178rawTemperature_t)) // Data size (Id + Temperature)
+#define MAX_TEMP_SENSORS 16u                                                         /**< Maximum number of allocated sensors */
+#define SENSOR_PAIR_SIZE (sizeof(pus178sensorId_t) + sizeof(pus178rawTemperature_t)) /**< Data size (Id + Temperature) */
 
 /*************************** Functions Declarations **************************/
 
@@ -27,7 +27,7 @@
 /*************************** Functions Definitions ***************************/
 
 /**
- * @fn              InitS178(pus3Env_t *pus3_env)
+ * @fn              InitS178(pus178Env_t *pus178_env)
  * @brief           This function initializes a PUS178 context
  * @param[in,out]   pus178_env PUS178 environment
  * @retval          #RET_INVALID_PARAM if pus178_env or p_thermal_context are null pointers
@@ -82,7 +82,7 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
     if ((env != NULL) && (tm != NULL) && (error_code != NULL))
     {
         // Error code and tm initialization
-        *error_code = PUS_EXECUTION_NO_ERROR;
+        *error_code                                               = PUS_EXECUTION_NO_ERROR;
         pus178rawTemperature_t raw_temperatures[MAX_TEMP_SENSORS] = { 0 };
 
         // Get pus178 environment
@@ -146,7 +146,7 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
     else
     {
         return_value = RET_INVALID_PARAM;
-        *error_code = PUS_EXECUTION_UNEXPECTED_DATA;
+        *error_code  = PUS_EXECUTION_UNEXPECTED_DATA;
     }
 
     return return_value;
@@ -174,7 +174,7 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
 
         // Preallocation TM data (Temperature array and buffer with id + temperature pair)
         pus178rawTemperature_t raw_temperatures[MAX_TEMP_SENSORS] = { 0 };
-        uint8_t tm_buffer[MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE] = { 0 };
+        uint8_t tm_buffer[MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE]    = { 0 };
 
         // TC Format: [N SENSOR] - [ID1] - [ID2] - ... - [ID N]
         // Check TC table by extracting it and checking if is valid and we have at least onse sensor?
@@ -197,8 +197,8 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                     {
                         // N of sensors requested from tc (>0 checked) and loop parameters
                         uint8_t tc_sensor_n_req = tc->data[0];
-                        uint8_t i = 0;
-                        uint16_t offset = 0;
+                        uint8_t i               = 0;
+                        uint16_t offset         = 0;
 
                         // Current number of sensors onboard from context!!! (>0 checked)
                         uint8_t env_sensor_n_max = pus178_env->p_thermal_context->temp_sensor_count;
@@ -208,7 +208,7 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                         {
                             // Iterate sensor Id from tc: [N] - [id 1] - [id 2] - ... - [id N]
                             pus178sensorId_t sensorid = tc->data[i + 1];
- 
+
                             // Check sensor id is valid against preallocation and current sensors onboard
                             if ((sensorid < MAX_TEMP_SENSORS) && (sensorid < env_sensor_n_max))
                             {
@@ -216,11 +216,7 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                                 if ((offset + SENSOR_PAIR_SIZE) <= sizeof(tm_buffer))
                                 {
                                     // Read temperature of current iterated sensor
-                                    return_value = DS18B20ReadTemperature(
-                                        pus178_env->p_thermal_context,
-                                        sensorid,
-                                        &raw_temperatures[sensorid]
-                                    );
+                                    return_value = DS18B20ReadTemperature(pus178_env->p_thermal_context, sensorid, &raw_temperatures[sensorid]);
 
                                     // Fill buffer with 1 sensor data if valid
                                     if (return_value == RET_SUCCESSFUL)
