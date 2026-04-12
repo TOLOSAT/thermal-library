@@ -25,7 +25,7 @@
  */
 typedef struct
 {
-    pusStatus_t status;             /**< @brief PUS178 environment status */
+    pusStatus_t status;                    /**< @brief PUS178 environment status */
     temSensorContext_t *p_thermal_context; /**< @brief Pointer to the thermal instance */
 } pus178Env_t;
 
