@@ -1,7 +1,7 @@
 /**
  * @file    pus178.h
- * @author  Merlin Kooshmanian
- * @brief   Header file for pus178 Task
+ * @author  Aldo Lupio
+ * @brief   Source file for PUS 178 (Thermal) functions
  *
  * @copyright Copyright (c) TOLOSAT 2025
  */
@@ -13,7 +13,7 @@
 
 #include "pus_types.h"
 #include "common_types.h"
-#include "drv/thermal_driver.h"
+#include "drv/ds18_drv.h"
 
 /***************************** Macros Definitions ****************************/
 
@@ -25,19 +25,9 @@
  */
 typedef struct
 {
-    pusStatus_t status;                    /**< @brief PUS178 environment status */
-    temSensorContext_t *p_thermal_context; /**< @brief Pointer to the thermal instance */
+    pusStatus_t status;            /**< @brief PUS178 environment status */
+    ds18Context_t *p_ds18_context; /**< @brief Pointer to the thermal instance */
 } pus178Env_t;
-
-/**
- * @brief   Type of id describing a sensor
- */
-typedef uint8_t pus178sensorId_t;
-
-/**
- * @brief   Type describing raw temperature reading from sensor
- */
-typedef int16_t pus178rawTemperature_t;
 
 /*************************** Variables Declarations **************************/
 

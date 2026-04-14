@@ -1,7 +1,6 @@
 /**
  * @file    pus178.c
- * @author  Louis
- * @author  Aldo
+ * @author  Aldo Lupio
  * @brief   Source file for PUS 178 (Thermal) functions
  *
  * @copyright Copyright (c) TOLOSAT 2025
@@ -17,8 +16,8 @@
 
 /***************************** Macros Definitions ****************************/
 
-#define MAX_TEMP_SENSORS 16u                                                         /**< Maximum number of allocated sensors */
-#define SENSOR_PAIR_SIZE (sizeof(pus178sensorId_t) + sizeof(pus178rawTemperature_t)) /**< Data size (Id + Temperature) */
+#define MAX_TEMP_SENSORS 16u                                                     /**< Maximum number of allocated sensors */
+#define SENSOR_PAIR_SIZE (sizeof(ds18SensorId_t) + sizeof(ds18RawTemperature_t)) /**< Data size (Id + Temperature) */
 
 /*************************** Functions Declarations **************************/
 
@@ -28,9 +27,9 @@
 
 /**
  * @fn              InitS178(pus178Env_t *pus178_env)
- * @brief           This function initializes a PUS178 context
+ * @brief           This function initializes the PUS178 context if DS18 is initialized
  * @param[in,out]   pus178_env PUS178 environment
- * @retval          #RET_INVALID_PARAM if pus178_env or p_thermal_context are null pointers
+ * @retval          #RET_INVALID_PARAM if pus178_env or p_ds18_context are null pointers
  * @retval          #RET_ERROR if DeviceOpen encountered an error
  * @retval          #RET_SUCCESSFUL else
  */
@@ -39,11 +38,10 @@ returnCode_t InitS178(pus178Env_t *pus178_env)
     returnCode_t return_value = RET_SUCCESSFUL;
 
     // Check input parameter(s)
-    if ((pus178_env != NULL) && (pus178_env->p_thermal_context != NULL))
+    if ((pus178_env != NULL) && (pus178_env->p_ds18_context != NULL))
     {
-        // Initialize DS18B20 sensor
-        return_value = DS18B20Init(pus178_env->p_thermal_context);
-        if (return_value == RET_SUCCESSFUL)
+        // Check DS18 is initialized
+        if (pus178_env->p_ds18_context->ow_device_init_state == DS18_INIT_DONE)
         {
             pus178_env->status = PUS_INITIALIZED;
         }
@@ -91,26 +89,26 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
         if (pus178_env->status == PUS_INITIALIZED)
         {
             // Check pointer to thermal context exists
-            if (pus178_env->p_thermal_context != NULL)
+            if (pus178_env->p_ds18_context != NULL)
             {
                 // Check sensor has been initialized
-                if (pus178_env->p_thermal_context->ow_device_init_state == INIT_DONE)
+                if (pus178_env->p_ds18_context->ow_device_init_state == DS18_INIT_DONE)
                 {
                     // Ask for broadcast measurement
-                    return_value = DS18B20StartMeasurementBroadcast(pus178_env->p_thermal_context);
+                    return_value = DS18StartMeasurementBroadcast(pus178_env->p_ds18_context);
                     if (return_value == RET_SUCCESSFUL)
                     {
-                        pus178rawTemperature_t raw_temperatures[MAX_TEMP_SENSORS] = { 0 };
+                        ds18RawTemperature_t raw_temp[MAX_TEMP_SENSORS] = { 0 };
 
                         // Current number of sensors onboard from context (>0 checked)
-                        uint8_t env_sensor_n_max = pus178_env->p_thermal_context->temp_sensor_count;
+                        uint8_t env_sensor_n_max = pus178_env->p_ds18_context->ds18_count;
 
                         // Read all sensors temperature
-                        return_value = DS18B20ReadTemperaturesBroadcast(pus178_env->p_thermal_context, raw_temperatures, env_sensor_n_max);
+                        return_value = DS18ReadTemperaturesBroadcast(pus178_env->p_ds18_context, raw_temp, env_sensor_n_max);
                         if (return_value == RET_SUCCESSFUL)
                         {
                             // Build PUS178SS2 TM (array of temperatures from all sensors, 2 bytes * N)
-                            return_value = BuildTM(tm, 178u, 2u, (pusData_t *)raw_temperatures, env_sensor_n_max * sizeof(pus178rawTemperature_t));
+                            return_value = BuildTM(tm, 178u, 2u, (pusData_t *)raw_temp, env_sensor_n_max * sizeof(ds18RawTemperature_t));
                             if (return_value != RET_SUCCESSFUL)
                             {
                                 *error_code = PUS_EXECUTION_FAILED;
@@ -182,13 +180,13 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
         if (pus178_env->status == PUS_INITIALIZED)
         {
             // Check pointer to thermal context exists
-            if (pus178_env->p_thermal_context != NULL)
+            if (pus178_env->p_ds18_context != NULL)
             {
                 // Check sensor has been initialized
-                if (pus178_env->p_thermal_context->ow_device_init_state == INIT_DONE)
+                if (pus178_env->p_ds18_context->ow_device_init_state == DS18_INIT_DONE)
                 {
                     // Ask for broadcast measurement
-                    return_value = DS18B20StartMeasurementBroadcast(pus178_env->p_thermal_context);
+                    return_value = DS18StartMeasurementBroadcast(pus178_env->p_ds18_context);
                     if (return_value == RET_SUCCESSFUL)
                     {
                         uint8_t tm_buffer[MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE] = { 0 };
@@ -199,36 +197,36 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                         uint16_t offset         = 0;
 
                         // Current number of sensors onboard from context!!! (>0 checked)
-                        uint8_t env_sensor_n_max = pus178_env->p_thermal_context->temp_sensor_count;
+                        uint8_t env_sensor_n_max = pus178_env->p_ds18_context->ds18_count;
 
                         // Read requested sensors through iteration unless error
                         while ((i < tc_sensor_n_req) && (return_value == RET_SUCCESSFUL))
                         {
                             // Iterate sensor Id from tc: [N] - [id 1] - [id 2] - ... - [id N]
-                            pus178sensorId_t sensorid = tc->data[i + 1u];
+                            ds18SensorId_t sensor_id = tc->data[i + 1u];
 
                             // Check sensor id is valid against preallocation and current sensors onboard
-                            if ((sensorid < MAX_TEMP_SENSORS) && (sensorid < env_sensor_n_max))
+                            if ((sensor_id < MAX_TEMP_SENSORS) && (sensor_id < env_sensor_n_max))
                             {
                                 // Prevent buffer overflow (ex: 4 sensors -> 12 bytes = offset (9) + pair (3))
                                 if ((offset + SENSOR_PAIR_SIZE) <= (MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE))
                                 {
-                                    pus178rawTemperature_t raw_temperatures[MAX_TEMP_SENSORS] = { 0 };
+                                    ds18RawTemperature_t raw_temp[MAX_TEMP_SENSORS] = { 0 };
 
                                     // Read temperature of current iterated sensor
-                                    return_value = DS18B20ReadTemperature(pus178_env->p_thermal_context, sensorid, &raw_temperatures[sensorid]);
+                                    return_value = DS18ReadTemperature(pus178_env->p_ds18_context, sensor_id, &raw_temp[sensor_id]);
 
                                     // Fill buffer with 1 sensor data if valid
                                     if (return_value == RET_SUCCESSFUL)
                                     {
                                         // Id (8-bit, big-endian)
-                                        tm_buffer[offset]  = sensorid;
-                                        offset            += sizeof(pus178sensorId_t);
+                                        tm_buffer[offset]  = sensor_id;
+                                        offset            += sizeof(ds18SensorId_t);
 
                                         // Temperature (16-bit, big-endian) -> MSB then LSB
-                                        tm_buffer[offset]       = (uint8_t)(((uint16_t)raw_temperatures[sensorid] >> 8) & 0xFFu);
-                                        tm_buffer[offset + 1u]  = (uint8_t)((uint16_t)raw_temperatures[sensorid] & 0xFFu);
-                                        offset                 += sizeof(pus178rawTemperature_t);
+                                        tm_buffer[offset]       = (uint8_t)(((uint16_t)raw_temp[sensor_id] >> 8) & 0xFFu);
+                                        tm_buffer[offset + 1u]  = (uint8_t)((uint16_t)raw_temp[sensor_id] & 0xFFu);
+                                        offset                 += sizeof(ds18RawTemperature_t);
                                     }
                                 }
                                 else
