@@ -16,8 +16,8 @@
 
 /***************************** Macros Definitions ****************************/
 
-#define MAX_TEMP_SENSORS 16u                                                     /**< Maximum number of allocated sensors */
-#define SENSOR_PAIR_SIZE (sizeof(ds18SensorId_t) + sizeof(ds18RawTemperature_t)) /**< Data size (Id + Temperature) */
+#define MAX_NB_DS18_ONBOARD 16u                                                     /**< Maximum number of allocated sensors */
+#define DATA_PER_DS18_SIZE  (sizeof(ds18SensorId_t) + sizeof(ds18RawTemperature_t)) /**< Data size per sensor on tm (Id + Temperature) */
 
 /*************************** Functions Declarations **************************/
 
@@ -62,8 +62,8 @@ returnCode_t InitS178(pus178Env_t *pus178_env)
  * @fn              ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code)
  * @brief           Function that receives S17SS1 TC (Broadcast) and asks for broadcast temperature
  * @param[in,out]   env PUS178 environment
- * @param[in]       tc S178SS1 TC
- * @param[out]      tm S178SS2 TM with temperature sensor information
+ * @param[in]       tc S178SS1 TC Format: Ignored
+ * @param[out]      tm S178SS2 TM Format: [[TEMP1] - [TEMP2] - ... - [TEMPNB]]
  * @param[out]      error_code Indicates which error has been encountered for S178SS2 TM
  * @retval          #RET_INVALID_PARAM if inputs are not valid
  * @retval          #RET_ERROR if error during sensor communication
@@ -98,17 +98,17 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                     return_value = DS18StartMeasurementBroadcast(pus178_env->p_ds18_context);
                     if (return_value == RET_SUCCESSFUL)
                     {
-                        ds18RawTemperature_t raw_temp[MAX_TEMP_SENSORS] = { 0 };
+                        ds18RawTemperature_t raw_temp[MAX_NB_DS18_ONBOARD] = { 0 };
 
-                        // Current number of sensors onboard from context (>0 checked)
-                        uint8_t env_sensor_n_max = pus178_env->p_ds18_context->ds18_count;
+                        // Current number of ds18 sensors onboard from context
+                        uint8_t nb_ds18_onboard = pus178_env->p_ds18_context->ds18_count;
 
-                        // Read all sensors temperature
-                        return_value = DS18ReadTemperaturesBroadcast(pus178_env->p_ds18_context, raw_temp, env_sensor_n_max);
+                        // Read all ds18 sensor temperatures onboard
+                        return_value = DS18ReadTemperaturesBroadcast(pus178_env->p_ds18_context, raw_temp, nb_ds18_onboard);
                         if (return_value == RET_SUCCESSFUL)
                         {
                             // Build PUS178SS2 TM (array of temperatures from all sensors, 2 bytes * N)
-                            return_value = BuildTM(tm, 178u, 2u, (pusData_t *)raw_temp, env_sensor_n_max * sizeof(ds18RawTemperature_t));
+                            return_value = BuildTM(tm, 178u, 2u, (pusData_t *)raw_temp, nb_ds18_onboard * sizeof(ds18RawTemperature_t));
                             if (return_value != RET_SUCCESSFUL)
                             {
                                 *error_code = PUS_EXECUTION_FAILED;
@@ -154,8 +154,8 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
  * @fn              ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionError_t *error_code)
  * @brief           Function that receives S17SS3 TC (Unicast), which asks for unicast temperature
  * @param[in,out]   env PUS178 environment
- * @param[in]       tc S178SS3 TC
- * @param[out]      tm S178SS4 TM with asked temperature sensor information
+ * @param[in]       tc S178SS3 TC Format: [NB SENSOR ONBOARD] - [ID1] - [ID2] - ... - [ID NB]
+ * @param[out]      tm S178SS4 TM Format: [[ID1, TEMP1] - [ID2, TEMP2] - ... - [IDNB, TEMPNB]]
  * @param[out]      error_code Indicates which error has been encountered for S178SS4 TM
  * @retval          #RET_INVALID_PARAM if am expected pointer is NULL
  * @retval          #RET_ERROR if cannot build TM
@@ -169,9 +169,6 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
     if ((env != NULL) && (tc != NULL) && (tm != NULL) && (error_code != NULL))
     {
         *error_code = PUS_EXECUTION_NO_ERROR;
-
-        // TC Format: [N SENSOR] - [ID1] - [ID2] - ... - [ID N]
-        // Check TC table by extracting it and checking if is valid and we have at least onse sensor?
 
         // Get pus178 environment
         pus178Env_t *pus178_env = (pus178Env_t *)env;
@@ -189,29 +186,29 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                     return_value = DS18StartMeasurementBroadcast(pus178_env->p_ds18_context);
                     if (return_value == RET_SUCCESSFUL)
                     {
-                        uint8_t tm_buffer[MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE] = { 0 };
+                        uint8_t tm_data_buffer[MAX_NB_DS18_ONBOARD * DATA_PER_DS18_SIZE] = { 0 };
 
-                        // N of sensors requested from tc (>0 checked) and loop parameters
-                        uint8_t tc_sensor_n_req = tc->data[0];
-                        uint8_t i               = 0;
-                        uint16_t offset         = 0;
+                        // Number of ds18 sensors readings requested from tc and loop parameters
+                        uint8_t tc_nb_ds18_requested = tc->data[0];
+                        uint8_t i                    = 0;
+                        uint16_t offset              = 0;
 
-                        // Current number of sensors onboard from context!!! (>0 checked)
-                        uint8_t env_sensor_n_max = pus178_env->p_ds18_context->ds18_count;
+                        // Actual current number of sensors onboard from context
+                        uint8_t nb_ds18_onboard = pus178_env->p_ds18_context->ds18_count;
 
                         // Read requested sensors through iteration unless error
-                        while ((i < tc_sensor_n_req) && (return_value == RET_SUCCESSFUL))
+                        while ((i < tc_nb_ds18_requested) && (return_value == RET_SUCCESSFUL))
                         {
                             // Iterate sensor Id from tc: [N] - [id 1] - [id 2] - ... - [id N]
                             ds18SensorId_t sensor_id = tc->data[i + 1u];
 
                             // Check sensor id is valid against preallocation and current sensors onboard
-                            if ((sensor_id < MAX_TEMP_SENSORS) && (sensor_id < env_sensor_n_max))
+                            if ((sensor_id < MAX_NB_DS18_ONBOARD) && (sensor_id < nb_ds18_onboard))
                             {
                                 // Prevent buffer overflow (ex: 4 sensors -> 12 bytes = offset (9) + pair (3))
-                                if ((offset + SENSOR_PAIR_SIZE) <= (MAX_TEMP_SENSORS * SENSOR_PAIR_SIZE))
+                                if ((offset + DATA_PER_DS18_SIZE) <= (MAX_NB_DS18_ONBOARD * DATA_PER_DS18_SIZE))
                                 {
-                                    ds18RawTemperature_t raw_temp[MAX_TEMP_SENSORS] = { 0 };
+                                    ds18RawTemperature_t raw_temp[MAX_NB_DS18_ONBOARD] = { 0 };
 
                                     // Read temperature of current iterated sensor
                                     return_value = DS18ReadTemperature(pus178_env->p_ds18_context, sensor_id, &raw_temp[sensor_id]);
@@ -220,13 +217,13 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                                     if (return_value == RET_SUCCESSFUL)
                                     {
                                         // Id (8-bit, big-endian)
-                                        tm_buffer[offset]  = sensor_id;
-                                        offset            += sizeof(ds18SensorId_t);
+                                        tm_data_buffer[offset]  = sensor_id;
+                                        offset                 += sizeof(ds18SensorId_t);
 
                                         // Temperature (16-bit, big-endian) -> MSB then LSB
-                                        tm_buffer[offset]       = (uint8_t)(((uint16_t)raw_temp[sensor_id] >> 8) & 0xFFu);
-                                        tm_buffer[offset + 1u]  = (uint8_t)((uint16_t)raw_temp[sensor_id] & 0xFFu);
-                                        offset                 += sizeof(ds18RawTemperature_t);
+                                        tm_data_buffer[offset]       = (uint8_t)(((uint16_t)raw_temp[sensor_id] >> 8) & 0xFFu);
+                                        tm_data_buffer[offset + 1u]  = (uint8_t)((uint16_t)raw_temp[sensor_id] & 0xFFu);
+                                        offset                      += sizeof(ds18RawTemperature_t);
                                     }
                                 }
                                 else
@@ -245,7 +242,7 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                         // Build TM PUS178SS4 with already filled buffer
                         if (return_value == RET_SUCCESSFUL)
                         {
-                            return_value = BuildTM(tm, 178u, 4u, (pusData_t *)tm_buffer, offset);
+                            return_value = BuildTM(tm, 178u, 4u, (pusData_t *)tm_data_buffer, offset);
 
                             if (return_value != RET_SUCCESSFUL)
                             {

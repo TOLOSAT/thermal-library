@@ -2,7 +2,7 @@
  * @file    ds18_drv.h
  * @author  Louis Remacle
  * @author  Aldo Lupio
- * @brief   Header file for Thermal Driver
+ * @brief   Header file for DS18 Driver
  *
  * @copyright Copyright (c) TOLOSAT 2025
  */
@@ -10,8 +10,8 @@
 /**
  * @defgroup middlewares Middlewares
  * @{
- * @defgroup thermal-drv Thermal Driver
- * @brief High level driver for the Thermal sensors and actuators.
+ * @defgroup ds18-drv DS18 Driver
+ * @brief High level driver for the DS18 sensors and actuators.
  * @{
  */
 
