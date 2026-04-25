@@ -103,6 +103,9 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                         // Current number of ds18 sensors onboard from context
                         uint8_t nb_ds18_onboard = pus178_env->p_ds18_context->ds18_count;
 
+                        // Sleep for 500 ms before reading temps
+                        Sleep(500);
+
                         // Read all ds18 sensor temperatures onboard
                         return_value = DS18ReadTemperaturesBroadcast(pus178_env->p_ds18_context, raw_temp, nb_ds18_onboard);
                         if (return_value == RET_SUCCESSFUL)
@@ -210,6 +213,9 @@ returnCode_t ExecuteS178SS3(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                         // Copy NB requested data into tm_data_buffer
                         (void)memcpy(tm_data_buffer, tc->data, sizeof(pusNField_t));
                         offset += sizeof(pusNField_t);
+
+                        // Sleep for 500 ms before reading temps
+                        Sleep(500);
 
                         // Read requested sensors through iteration unless error
                         while ((i < tc_nb_ds18_requested) && (return_value == RET_SUCCESSFUL))
