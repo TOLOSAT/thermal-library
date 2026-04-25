@@ -119,10 +119,12 @@ returnCode_t ExecuteS178SS1(void *env, pusTC_t *tc, pusTM_t *tm, pusExecutionErr
                             {
                                 tm_data_buffer[(i * DATA_PER_DS18_SIZE) + sizeof(pusNField_t)] = i; // Sensor id
                                 // Little Endian
-                                tm_data_buffer[(i * DATA_PER_DS18_SIZE) + 1u + sizeof(pusNField_t)] = (uint8_t)((uint16_t)raw_temp[i] & 0xFFu); // Temperature
-                                                                                                                                                // LSB
-                                tm_data_buffer[(i * DATA_PER_DS18_SIZE) + 2u + sizeof(pusNField_t)] = (uint8_t)((uint16_t)raw_temp[i] >> 8); // Temperature
-                                                                                                                                             // MSB
+                                tm_data_buffer[(i * DATA_PER_DS18_SIZE) + 1u + sizeof(pusNField_t)] =
+                                    (uint8_t)((uint16_t)raw_temp[i] & 0xFFu); // Temperature
+                                                                              // LSB
+                                tm_data_buffer[(i * DATA_PER_DS18_SIZE) + 2u + sizeof(pusNField_t)] =
+                                    (uint8_t)((uint16_t)raw_temp[i] >> 8); // Temperature
+                                                                           // MSB
                             }
 
                             return_value = BuildTM(tm, 178u, 2u, tm_data_buffer, sizeof(pusNField_t) + (nb_ds18_onboard * DATA_PER_DS18_SIZE));
