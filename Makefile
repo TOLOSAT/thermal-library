@@ -6,7 +6,7 @@
 
 # Software Version
 MAJOR = 0
-MINOR = 2
+MINOR = 1
 PATCH = 0
 
 ##############################################
