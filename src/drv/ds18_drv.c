@@ -175,7 +175,7 @@ returnCode_t DS18StartMeasurement(ds18Context_t *context, ds18SensorId_t sensor_
 }
 
 /**
- * @fn              DS18ReadTemperature(ds18Context_t *ds18_context, ds18SensorId_t sensor_id, ds18RawTemperature_t *raw_temp)
+ * @fn              DS18ReadTemperature(ds18Context_t *context, ds18SensorId_t sensor_id, ds18RawTemperature_t *raw_temp)
  * @brief           Creates OneWire transactions to read temperature of single sensor given id.
  * @param[in,out]   context ds18 context (Sensor information)
  * @param[in,out]   raw_temp raw measured temperature data given back
