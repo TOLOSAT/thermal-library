@@ -23,12 +23,7 @@
 /*************************** Functions Definitions ***************************/
 
 /**
- * @fn              DS18Init(ds18Context_t *context)
- * @brief           Initializes the ds18 sensors environment and the One-Wire interface.
- * @param[in,out]   context ds18 context (Sensor information)
- * @retval          #RET_INVALID_PARAM if environment not properly initialised
- * @retval          #RET_ERROR if error while opening OneWire device
- * @retval          #RET_SUCCESSFUL else
+ * @copydoc DS18Init
  */
 returnCode_t DS18Init(ds18Context_t *context)
 {
@@ -63,12 +58,7 @@ returnCode_t DS18Init(ds18Context_t *context)
 }
 
 /**
- * @fn              DS18StartMeasurementBroadcast(ds18Context_t *context)
- * @brief           Creates OneWire transactions to issue a Broadcast temperature masurement.
- * @param[in,out]   context ds18 context (Sensor information)
- * @retval          #RET_INVALID_PARAM if environment not properly initialised
- * @retval          #RET_ERROR if error while opening OneWire device
- * @retval          #RET_SUCCESSFUL else
+ * @copydoc DS18StartMeasurementBroadcast
  */
 returnCode_t DS18StartMeasurementBroadcast(ds18Context_t *context)
 {
@@ -100,14 +90,7 @@ returnCode_t DS18StartMeasurementBroadcast(ds18Context_t *context)
 }
 
 /**
- * @fn              DS18ReadTemperaturesBroadcast(ds18Context_t *context, ds18RawTemperature_t *raw_temp, size_t count_sensor)
- * @brief           Creates OneWire transactions to read temperature for len (number of) sensors.
- * @param[in,out]   context ds18 context (Sensor information)
- * @param[in,out]   raw_temp Array to store raw temperatures measurements of length len
- * @param[in]       count_sensor Amount of sensors to be read
- * @retval          #RET_INVALID_PARAM if environment or inputs are not properly initialised
- * @retval          #RET_ERROR if error while opening OneWire device
- * @retval          #RET_SUCCESSFUL else
+ * @copydoc DS18ReadTemperaturesBroadcast
  */
 returnCode_t DS18ReadTemperaturesBroadcast(ds18Context_t *context, ds18RawTemperature_t *raw_temp, size_t count_sensor)
 {
@@ -133,13 +116,7 @@ returnCode_t DS18ReadTemperaturesBroadcast(ds18Context_t *context, ds18RawTemper
 }
 
 /**
- * @fn              DS18StartMeasurement(ds18Context_t *context, ds18SensorId_t sensor_id)
- * @brief           Creates OneWire transactions to issue temperature conversion of single sensor given id.
- * @param[in,out]   context ds18 context (Sensor information)
- * @param[in]       sensor_id id of sensor selected (position on N-table)
- * @retval          #RET_INVALID_PARAM if environment or inputs are not properly initialised
- * @retval          #RET_ERROR if error while opening OneWire device
- * @retval          #RET_SUCCESSFUL else
+ * @copydoc DS18StartMeasurement
  */
 returnCode_t DS18StartMeasurement(ds18Context_t *context, ds18SensorId_t sensor_id)
 {
@@ -175,14 +152,7 @@ returnCode_t DS18StartMeasurement(ds18Context_t *context, ds18SensorId_t sensor_
 }
 
 /**
- * @fn              DS18ReadTemperature(ds18Context_t *context, ds18SensorId_t sensor_id, ds18RawTemperature_t *raw_temp)
- * @brief           Creates OneWire transactions to read temperature of single sensor given id.
- * @param[in,out]   context ds18 context (Sensor information)
- * @param[in,out]   raw_temp raw measured temperature data given back
- * @param[in]       sensor_id id of sensor selected (position on N-table)
- * @retval          #RET_INVALID_PARAM if environment or inputs are not properly initialised
- * @retval          #RET_ERROR if error while opening OneWire device
- * @retval          #RET_SUCCESSFUL else
+ * @copydoc DS18ReadTemperature
  */
 returnCode_t DS18ReadTemperature(ds18Context_t *context, ds18SensorId_t sensor_id, ds18RawTemperature_t *raw_temp)
 {
@@ -231,13 +201,7 @@ returnCode_t DS18ReadTemperature(ds18Context_t *context, ds18SensorId_t sensor_i
 }
 
 /**
- * @fn              DS18ConvertRawToFloat(ds18Model_t model, ds18RawTemperature_t raw_temp, float *float_temp)
- * @brief           Converts the temperature from raw (int) to float given sensor model (S/B version).
- * @param[in]       model Information of sensor model to apply proper conversion
- * @param[in]       raw_temp Raw measured temperature data
- * @param[out]      float_temp Measured temperature data in float type
- * @retval          #RET_INVALID_PARAM if raw temperature doesnt exist
- * @retval          #RET_SUCCESSFUL else
+ * @copydoc DS18ConvertRawToFloat
  */
 returnCode_t DS18ConvertRawToFloat(ds18Model_t model, ds18RawTemperature_t raw_temp, float *float_temp)
 {
