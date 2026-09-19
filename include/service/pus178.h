@@ -13,7 +13,7 @@
 
 #include "pus_types.h"
 #include "common_types.h"
-#include "drv/ds18_drv.h"
+#include "drivers/ds18_drv.h"
 
 /***************************** Macros Definitions ****************************/
 
