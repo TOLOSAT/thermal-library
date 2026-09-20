@@ -12,7 +12,7 @@
 #include <string.h>
 
 #include "kernel.h"
-#include "drv/ds18_drv.h"
+#include "drivers/ds18_drv.h"
 
 /***************************** Macros Definitions ****************************/
 
