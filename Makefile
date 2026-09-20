@@ -15,8 +15,15 @@ PATCH = 0
 
 LIB_NAME = thermal
 
-# Main recipe
+.PHONY : all clean
+
+# Main recipes
 all : build
+
+clean : build-clean
+
+print-%:
+	@printf '%s = %s\n' '$*' '$($*)'
 
 ##############################################
 ################## INCLUDES ##################
