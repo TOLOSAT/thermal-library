@@ -3,7 +3,8 @@
  * @author  Aldo Lupio
  * @brief   Source file for PUS 178 (Thermal) functions
  *
- * @copyright Copyright (c) TOLOSAT 2025
+ * @copyright Copyright (c) TOLOSAT 2026
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /******************************* Include Files *******************************/

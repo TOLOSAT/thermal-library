@@ -4,7 +4,8 @@
  * @author  Aldo Lupio
  * @brief   Header file for DS18 Driver
  *
- * @copyright Copyright (c) TOLOSAT 2025
+ * @copyright Copyright (c) TOLOSAT 2026
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
