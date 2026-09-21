@@ -14,7 +14,7 @@ The archive is written to `build/libs/libthermal.a`.
 
 ## Configuration
 
-Library options belong in `gen/Kconfig.options`. The parent project sources this fragment and generates a library-scoped `autoconf.h`; the fragment is currently empty. A standalone checkout can maintain its own configuration with `make default_defconfig` and `make menuconfig`. Initialise the `tools/` submodule recursively before generating or building from a standalone checkout.
+Library options belong in `gen/Kconfig.options`. The parent project sources this fragment and generates `thermal_autoconf.h`; the fragment is currently empty. A standalone checkout can maintain its own configuration with `make default_defconfig` and `make menuconfig`. Initialise the `tools/` submodule recursively before generating or building from a standalone checkout.
 
 ## License
 
